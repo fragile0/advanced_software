@@ -1,0 +1,128 @@
+git-可持久化 多人控制 版本控制 
+
+//acwing git仓库
+git.acwing.com
+
+shift + 文字(选中) 
+crtl + fn + insert  (复制)
+shift + fn + insert (粘贴)
+
+
+Untracked：不在Git里.
+Unstaged：在Git里但没有commit
+GIt 有三大区：工作区，暂存区，版本库，以及untracked，unstaged，uncommited三个状态
+
+项目文件夹里出去.git这个隐藏文件，其他文件都在工作区，工作区的文件通过git add添加到暂存区，
+git commit提交到版本库。新建的文件(不在版本库的状态)都是untracked状态
+通过git add添加到暂存区，git就会在暂存区生成一个该文件的索引，此文件处于uncommited状态，
+通过git commit添加到版本库，添加到版本库之后，再对文件修改，文件就处于unstaged状态
+
+仅仅删除暂存区文件使用 git rm --cache 文件名，不会影响工作区文件
+删除暂存区和工作区文件使用git rm -f 文件名
+如果要删除已经commit到版本库的文件需要使用git reset命令
+
+git reset 有三个选项 --soft --mixed --hard
+git reset --soft 版本库ID 仅仅是撤销已经提交的版本库，不会修改暂存区和工作区
+git reset --mixed 版本库ID 仅仅是撤销已经提交的版本库和暂存区，不会影响工作区
+git reset --hard 版本库ID 将工作区，版本库，暂存区都恢复到版本库。
+
+如果想要保留工作区的修改，一般使用–miexed选项，注意这个ID是当前版本库的上一个版本库的ID。如果不想保留所有区的修改，那就使用–hard。
+
+也可以使用以下这套命令
+git rm --cached “路径名” 来删除已经commit到版本库里面的文件
+git commit -m" remove some file"
+git push origin master
+
+
+1.基本概念 
+	1.1 工作区(unstaged)：仓库的目录 工作区独立于各个分支的 --当前的工作目录
+	1.2 暂存区(staged)：工作区和版本库中的一个缓冲
+	1.3 版本库：存放所有已经提交到本地仓库的代码版本
+		每当把暂存区中的内容存到版本库后,相当于head向后插入一个结点，同时head向后移动一位]
+	1.4 版本结构：树结构，树中每个节点代表一个代码版本。
+		
+2.git常用命令
+
+	本地
+	2.1 git config --global user.name xxx		设置全局用户名
+	2.2 git config --global user.emal xxx.com	设置全局邮箱地址
+	2.3 git init: 将当前目录配置成git仓库 信息记录隐藏在.git文件夹中
+		信息记录中有 HEAD(头指针) branches config description hooks info objects refs 8个文件夹
+	2.4 git status	查看仓库状态
+	2.5 git add xxx 将xxx文件加入暂存区
+	2.6 git add .   将所有文件加入暂存区
+	2.7 git commit -m 将当前暂存区中的内容提交到当前分支
+		红色:文件正在工作区中	绿色：文件在暂存区中
+	2.8	git restore --staged <file>: 将暂存区的文件从暂存区撤出，但不会更改文件的内容。  staged 变为 unmodified
+		git restore <file>: 在工作空间但是不在暂存区的文件恢复到上次commit的状态，在工作区且在暂存区恢复到暂存区的版本
+		git restore --stage和git add互为逆运算
+		git rm --cached XX：将暂存区的文件从暂存区撤出，但不会更改文件的内容(但不能修改，可以add到暂存区) staged 变为 untracked
+		git rm xxx == rm xxx  git add xxx
+	2.9 git diff XX 
+		会先用工作区中的XX与缓存区中的XX进行比较，若缓存区中没有XX，再用工作区中的XX与当前head指向的版本中的XX进行比较。
+	2.10 git log 查看当前分支的所有版本 (从下往上看)
+	2.11 git reset --hard HEAD^ / git reset --hard HEAD~  回滚到上一个版本
+	     git reset --hard HEAD^^：往上回滚两次，以此类推
+		 git reset --hard HEAD~100：往上回滚100个版本
+		 git reset --hard 版本号：回滚到某一特定版本 (版本号用hash前7位来表示)
+	2.12 git reflog  查看HEAD指针的移动历史
+	
+3.进入云端
+	3.1 菜单 + 项目 + 星际项目 + 创建空白项目 
+		如果本地已经初始化项目后 最下面的勾需要取消
+	3.2 cd .ssh/     cat id_rsa.pub    复制密钥 + 添加密钥 
+	3.3 git remote add origin git@git.acwing.com:jack/project.git：将本地仓库关联到远程仓库
+	3.4 git push -u origin master   将本地分支提交到云端
+	3.5 git clone git@git.acwing.com:xxx/XXX.git：将远程仓库XXX下载到当前目录下
+	3.6 多人开发时 一般选择一个新的分支 
+		git checkout -b branche_name : 在当前结点下开辟一个新的分支
+		git branch 查看所有分支 所有分支公用一个暂存区
+		git checkout branch_name：切换到branch_name这个分支
+		git merge branch_name：将分支branch_name合并到当前分支上   merge后指向了同一个结点
+		git branch -d branche_name: 删除某一个分支
+		git push --set-upstream origin branch_name：设置本地的branch_name分支对应远程仓库的branch_name分支
+		删除分支  注意：本地和云端的分支是独立的
+		git push -d origin branch_name：删除远程仓库的branch_name分支(删除前必须切换到 另一个分支)   
+		git branch --set-upstream-to=origin/branch_name1 branch_name2：将远程的branch_name1分支与本地的branch_name2分支对应
+		git pull 将云端分支同步到本地并合并
+		git pull origin branch_name：将远程仓库的branch_name分支与本地仓库的当前分支合并
+		
+		git stash：将工作区和暂存区中尚未提交的修改存入栈中
+		git stash apply：将栈顶存储的修改恢复到当前分支，但不删除栈顶元素
+		git stash drop：删除栈顶存储的修改
+		git stash pop：将栈顶存储的修改恢复到当前分支，同时删除栈顶元素
+		git stash list：查看栈中所有元素
+		
+		如果两个人开发同一个文件  如果git push失败 可以先git Pull 后进行修改 将修改的文件git push上去
+	3.7 云端合并 
+		常见合并请求 + 填写leader + 进入项目 +  同意合并
+	3.8 个体开发
+		git pull + git add + git commit + git push
+	3.9 云端分支覆盖本地分支
+		git reset --hard origin/branchName
+		
+4.头节点分离状态
+	4.1 git checkout — XX或git restore XX：将XX文件尚未加入暂存区的修改全部撤销
+		 git checkout head^4 让head指向4级父亲结点
+		 git branch -f main head^3  让main指向head3级父亲节点
+	分支dev指向分支中最新的结点 
+	如果head指针和分支名字指向同一地址 大部分情况下head指针=分支名字=地址名字 只有在相对寻址时不能使用地址 应该使用分支名字
+	
+
+	
+1、git clone 与 git pull 相同点
+相同点：都是从远程服务器拉取代码到本地
+
+2、git clone 与 git pull 不同点
+git clone
+是在本地没有版本库的时候，从远程服务器克隆整个版本库到本地，是一个本地从无到有的过程。
+
+git pull
+在本地有版本库的情况下，从远程库获取最新commit 数据（如果有的话），并merge（合并）到本地。
+
+git pull = git fetch + git merge
+
+3、使用场景
+通常情况下，远程操作的第一步，是使用git clone从远程主机克隆一个版本库到本地。
+
+本地修改代码后，每次从本地仓库push到远程仓库之前都要先进行git pull操作，保证push到远程仓库时没有版本冲突。 
